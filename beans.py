@@ -3,17 +3,17 @@ import strings
 
 
 class Beans:
+    def __init__(self):
+        self.client = None
+
     def help(self):
         print(strings.help)
 
-    def connect(self, host='127.0.0.1', port=11300):
+    def connect(self, host='127.0.0.1', port=11300) -> bool:
         try:
             client = greenstalk.Client((host, port))
-            client.close()
-            with open('config', 'w') as f:
-                print(host, port, sep='\n', file=f)
-
-            print("Connected successfully")
+            self.client = client
+            return True
 
         except ConnectionRefusedError:
-            print(f"Invalid credentials: {host}:{port}")
+            return False

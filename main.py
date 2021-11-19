@@ -25,7 +25,12 @@ class Console:
         elif len(args) > 1:
             port = args[1]
 
-        self.beans.connect(host, port)
+        if self.beans.connect(host, port):
+            with open('config', 'w') as f:
+                print(host, port, sep='\n', file=f)
+
+        else:
+            print(f"Invalid credentials: {host}:{port}")
 
     # noinspection PyShadowingNames
     def process_input(self, args):
