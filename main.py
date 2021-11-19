@@ -40,10 +40,7 @@ class Console:
             print(f"Invalid credentials: {host}:{port}")
 
     def command_status(self, *args, **kwargs):
-        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
-        if not self.beans.connect(host, port):
-            print(f"Invalid credentials: {host}:{port}")
-        else:
+        if self.client_connected():
             self.beans.status()
 
     def command_tube(self, *args, **kwargs):
@@ -52,10 +49,7 @@ class Console:
 
         tube = args[0]
 
-        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
-        if not self.beans.connect(host, port):
-            print(f"Invalid credentials: {host}:{port}")
-        else:
+        if self.client_connected():
             self.beans.tube(tube)
 
     def command_drain(self, *args, **kwargs):
@@ -64,10 +58,7 @@ class Console:
 
         tube = args[0]
 
-        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
-        if not self.beans.connect(host, port):
-            print(f"Invalid credentials: {host}:{port}")
-        else:
+        if self.client_connected():
             self.beans.drain(tube)
 
     def command_put(self, *args, **kwargs):
@@ -77,11 +68,13 @@ class Console:
         tube = args[0]
         body = args[1]
 
+        if self.client_connected():
+            self.beans.put(tube, body)
+
+    def client_connected(self) -> bool:
         host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
-        else:
-            self.beans.put(tube, body)
 
     # noinspection PyShadowingNames
     def process_input(self, args):
