@@ -1,70 +1,85 @@
 from exception import InvalidArgumentException
-import greenstalk
-import strings
+from beans import Beans
 import sys
 
 
-# noinspection PyShadowingNames
-def process_input(args):
-    command = None
-    options = {}
-    arguments = []
-    if len(args) > 1:
-        for i in range(1, len(args)):
-            if args[i][0] == '-':
-                if args[i].count('=') > 1:
-                    raise InvalidArgumentException(args[i])
+class Console:
+    def __init__(self, beans):
+        self.beans = beans
+        pass
 
-                if args[i].count('=') == 1:
-                    option, value = args[i].split('=')
+    def command_help(self, *args, **kwargs):
+        self.beans.help()
 
-                    if option[1] == '-':
-                        option = option[2:]
-                    else:
-                        option = option[1:]
+    def command_connect(self, *args, **kwargs):
+        host, port = None, None
+        if 'host' in kwargs:
+            host = kwargs['host']
 
-                    options[option] = value
+        elif len(args) > 0:
+            host = args[0]
 
-                if args[i].count('=') == 0:
-                    if args[i][1] == '-':
-                        option = args[i][2:]
-                    else:
-                        option = args[i][1:]
+        if 'port' in kwargs:
+            port = kwargs['port']
 
-                    options[option] = True
+        elif len(args) > 1:
+            port = args[1]
 
-            else:
-                arguments.append(args[i])
+        self.beans.connect(host, port)
 
-        if len(arguments) > 0:
-            command = arguments[0]
-            arguments.pop(0)
+    # noinspection PyShadowingNames
+    def process_input(self, args):
+        command = None
+        options = {}
+        arguments = []
+        if len(args) > 1:
+            for i in range(1, len(args)):
+                if args[i][0] == '-':
+                    if args[i].count('=') > 1:
+                        raise InvalidArgumentException(args[i])
 
-    return [command, arguments, options]
+                    if args[i].count('=') == 1:
+                        option, value = args[i].split('=')
+                        if option[1] == '-':
+                            option = option[2:]
 
+                        else:
+                            option = option[1:]
 
-def command_help():
-    print(strings.help)
+                        options[option] = value
 
+                    if args[i].count('=') == 0:
+                        if args[i][1] == '-':
+                            option = args[i][2:]
 
-# noinspection PyShadowingNames
-def command_connect(arguments):
-    host, port = arguments
-    try:
-        client = greenstalk.Client((host, port))
-        client.close()
-        with open('config', 'w') as f:
-            print(host, port, sep='\n', file=f)
+                        else:
+                            option = args[i][1:]
 
-        print("Connected successfully")
+                        options[option] = True
 
-    except ConnectionRefusedError:
-        print(f"Invalid credentials: {host}:{port}")
+                else:
+                    arguments.append(args[i])
+
+            if len(arguments) > 0:
+                command = arguments[0]
+                arguments.pop(0)
+
+        return [command, arguments, options]
 
 
 if __name__ == "__main__":
-    command, arguments, options = process_input(sys.argv)
-    if command == 'help':
-        command_help()
-    elif command == 'connect':
-        command_connect(arguments)
+    beans = Beans()
+    console = Console(beans)
+
+    command, arguments, options = console.process_input(sys.argv)
+
+    bindings = {
+        'help': console.command_help,
+        'connect': console.command_connect,
+    }
+
+    if command in bindings:
+        bindings[command](*arguments, **options)
+
+    else:
+        print("Unknown command")
