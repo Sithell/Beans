@@ -11,17 +11,17 @@ from configparser import ConfigParser
 
 
 class Console:
-    def __init__(self, beans: Beans, config: ConfigParser):
+    def __init__(self, beans: Beans, config: ConfigParser, path: str):
         self.beans: Beans = beans
         self.config: ConfigParser = config
-        pass
+        self.path: str = path
 
     def command_help(self, *args, **kwargs) -> None:
         self.beans.help()
 
     def command_connect(self, *args, **kwargs) -> None:
-        host: str = None
-        port: int = None
+        host: str = '127.0.0.1'
+        port: int = 11300
         if 'host' in kwargs:
             host = kwargs['host']
 
@@ -40,8 +40,9 @@ class Console:
 
             self.config.set('beanstalkd', 'host', host)
             self.config.set('beanstalkd', 'port', port)
-            with open('config.ini', 'w') as f:
+            with open(self.path, 'w') as f:
                 self.config.write(f)
+                print("Saved config into", self.path)
 
         else:
             raise InvalidCredentialsException(host, port)
@@ -129,11 +130,14 @@ class Console:
 
 
 if __name__ == "__main__":
+    executable = sys.executable
+    path = executable[:executable.rfind('/')] + '/config.ini'
+
     config: ConfigParser = ConfigParser()
-    config.read('config.ini')
+    config.read(path)
 
     beans: Beans = Beans()
-    console: Console = Console(beans, config)
+    console: Console = Console(beans, config, path)
 
     command: str
     arguments: list
