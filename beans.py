@@ -43,3 +43,26 @@ class Beans:
             stats['current-watching'],
             next_up.body
         ))
+
+    def put(self, tube, body, priority=65536, delay=0):
+        if self.client is None:
+            raise Exception("Client not initialized")
+
+        self.client.use(tube)
+        print(self.client.put(body, priority, delay))
+
+    def drain(self, tube):
+        if self.client is None:
+            raise Exception("Client not initialized")
+
+        count = 0
+        self.client.watch(tube)
+        while True:
+            if self.client.stats_tube(tube)['current-jobs-ready'] < 1:
+                break
+
+            job = self.client.reserve()
+            self.client.delete(job)
+            count += 1
+
+        print(f"Drained {count} jobs from {tube}")
