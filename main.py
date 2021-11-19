@@ -1,4 +1,10 @@
-from exception import InvalidArgumentException
+from exception import (
+    BeansException,
+    InvalidArgumentException,
+    InvalidCredentialsException,
+    MissingArgumentException,
+    NotEnoughArgumentsException,
+)
 from beans import Beans
 import sys
 from configparser import ConfigParser
@@ -38,7 +44,7 @@ class Console:
                 self.config.write(f)
 
         else:
-            print(f"Invalid credentials: {host}:{port}")
+            raise InvalidCredentialsException(host, port)
 
     def command_status(self, *args, **kwargs) -> None:
         if self.client_connected():
@@ -46,7 +52,7 @@ class Console:
 
     def command_tube(self, *args, **kwargs) -> None:
         if len(args) < 1:
-            raise Exception("Missing argument: tube")
+            raise MissingArgumentException('tube')
 
         tube: str = args[0]
 
@@ -55,7 +61,7 @@ class Console:
 
     def command_drain(self, *args, **kwargs) -> None:
         if len(args) < 1:
-            raise Exception("Missing argument: tube")
+            raise MissingArgumentException('tube')
 
         tube: str = args[0]
 
@@ -64,7 +70,7 @@ class Console:
 
     def command_put(self, *args, **kwargs) -> None:
         if len(args) < 2:
-            raise Exception("Not enough arguments")
+            raise NotEnoughArgumentsException(2, len(args))
 
         tube: str = args[0]
         body: str = args[1]
@@ -76,8 +82,7 @@ class Console:
         host: str = self.config.get('beanstalkd', 'host')
         port: int = self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
-            print(f"Invalid credentials: {host}:{port}")
-            return False
+            raise InvalidCredentialsException(host, port)
 
         return True
 
@@ -145,7 +150,11 @@ if __name__ == "__main__":
     }
 
     if command in bindings:
-        bindings[command](*arguments, **options)
+        try:
+            bindings[command](*arguments, **options)
+
+        except BeansException as e:
+            print("Error:", e.get_message())
 
     else:
         print("Unknown command")
