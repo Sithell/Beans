@@ -1,4 +1,5 @@
 from greenstalk import Client, Job
+from exception import ClientNotInitializedException
 import strings
 import tabulate
 
@@ -21,7 +22,7 @@ class Beans:
 
     def status(self) -> None:
         if self.client is None:
-            raise Exception("Client not initialized")
+            raise ClientNotInitializedException()
 
         info: dict = self.client.stats()
         print(strings.status.format(info['version'], info['hostname']))
@@ -35,7 +36,7 @@ class Beans:
 
     def tube(self, tube: str = 'default') -> None:
         if self.client is None:
-            raise Exception("Client not initialized")
+            raise ClientNotInitializedException()
 
         stats: dict = self.client.stats_tube(tube)
         self.client.use(tube)
@@ -50,14 +51,14 @@ class Beans:
 
     def put(self, tube: str, body: str, priority: int = 65536, delay: int = 0) -> None:
         if self.client is None:
-            raise Exception("Client not initialized")
+            raise ClientNotInitializedException()
 
         self.client.use(tube)
         print(self.client.put(body, priority, delay))
 
     def drain(self, tube: str) -> None:
         if self.client is None:
-            raise Exception("Client not initialized")
+            raise ClientNotInitializedException()
 
         count: int = 0
         self.client.watch(tube)
