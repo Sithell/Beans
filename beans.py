@@ -4,7 +4,7 @@ import strings
 
 class Beans:
     def __init__(self):
-        self.client = None
+        self.client: greenstalk.Client = None
 
     def help(self):
         print(strings.help)
@@ -15,5 +15,11 @@ class Beans:
             self.client = client
             return True
 
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, TimeoutError):
             return False
+
+    def tubes(self):
+        if self.client is None:
+            raise Exception("Client not initialized")
+
+        print(self.client.tubes())

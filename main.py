@@ -32,6 +32,15 @@ class Console:
         else:
             print(f"Invalid credentials: {host}:{port}")
 
+    def command_status(self, *args, **kwargs):
+        f = open('config', 'r')
+        config = f.readlines()
+        host, port = config[0].strip(), config[1].strip()
+        if not self.beans.connect(host, port):
+            print(f"Invalid credentials: {host}:{port}")
+        else:
+            self.beans.tubes()
+
     # noinspection PyShadowingNames
     def process_input(self, args):
         command = None
@@ -81,6 +90,7 @@ if __name__ == "__main__":
     bindings = {
         'help': console.command_help,
         'connect': console.command_connect,
+        'status': console.command_status
     }
 
     if command in bindings:
