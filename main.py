@@ -1,7 +1,7 @@
-import sys
-
 from exception import InvalidArgumentException
+import greenstalk
 import strings
+import sys
 
 
 # noinspection PyShadowingNames
@@ -47,7 +47,24 @@ def command_help():
     print(strings.help)
 
 
+# noinspection PyShadowingNames
+def command_connect(arguments):
+    host, port = arguments
+    try:
+        client = greenstalk.Client((host, port))
+        client.close()
+        with open('config', 'w') as f:
+            print(host, port, sep='\n', file=f)
+
+        print("Connected successfully")
+
+    except ConnectionRefusedError:
+        print(f"Invalid credentials: {host}:{port}")
+
+
 if __name__ == "__main__":
     command, arguments, options = process_input(sys.argv)
     if command == 'help':
         command_help()
+    elif command == 'connect':
+        command_connect(arguments)
