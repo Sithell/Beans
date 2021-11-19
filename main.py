@@ -39,7 +39,7 @@ class Console:
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
         else:
-            self.beans.tubes()
+            self.beans.status()
 
     # noinspection PyShadowingNames
     def process_input(self, args):

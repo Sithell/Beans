@@ -1,7 +1,6 @@
 import greenstalk
 import strings
 
-
 class Beans:
     def __init__(self):
         self.client: greenstalk.Client = None
@@ -18,8 +17,13 @@ class Beans:
         except (ConnectionRefusedError, TimeoutError):
             return False
 
-    def tubes(self):
+    def status(self):
         if self.client is None:
             raise Exception("Client not initialized")
 
-        print(self.client.tubes())
+        info = self.client.stats()
+        print(strings.status.format(info['version'], info['hostname']))
+        tubes = self.client.tubes()
+        for tube in tubes:
+            stats = self.client.stats_tube(tube)
+            print(f"{tube}: {stats['current-jobs-ready']}")
