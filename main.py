@@ -77,6 +77,9 @@ class Console:
         port: int = self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
+            return False
+
+        return True
 
     # noinspection PyShadowingNames
     def process_input(self, args: list) -> list:
