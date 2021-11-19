@@ -11,3 +11,11 @@ status = """\
 Beanstalkd v{} on {}
 Tube: Jobs ready\
 """
+
+tube = """\
+Tube: {}
+Jobs ready: {}
+Emitters/consumers: {} / {}
+Next job:
+"{}"\
+"""

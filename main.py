@@ -41,6 +41,19 @@ class Console:
         else:
             self.beans.status()
 
+    def command_tube(self, *args, **kwargs):
+        if len(args) < 1:
+            raise Exception("Missing argument: tube")
+
+        tube = args[0]
+        f = open('config', 'r')
+        config = f.readlines()
+        host, port = config[0].strip(), config[1].strip()
+        if not self.beans.connect(host, port):
+            print(f"Invalid credentials: {host}:{port}")
+        else:
+            self.beans.tube(tube)
+
     # noinspection PyShadowingNames
     def process_input(self, args):
         command = None
@@ -90,7 +103,8 @@ if __name__ == "__main__":
     bindings = {
         'help': console.command_help,
         'connect': console.command_connect,
-        'status': console.command_status
+        'status': console.command_status,
+        'tube': console.command_tube
     }
 
     if command in bindings:
