@@ -1,20 +1,21 @@
 from exception import InvalidArgumentException
 from beans import Beans
 import sys
-import configparser
+from configparser import ConfigParser
 
 
 class Console:
-    def __init__(self, beans, config):
-        self.beans = beans
-        self.config: configparser.ConfigParser = config
+    def __init__(self, beans: Beans, config: ConfigParser):
+        self.beans: Beans = beans
+        self.config: ConfigParser = config
         pass
 
-    def command_help(self, *args, **kwargs):
+    def command_help(self, *args, **kwargs) -> None:
         self.beans.help()
 
-    def command_connect(self, *args, **kwargs):
-        host, port = None, None
+    def command_connect(self, *args, **kwargs) -> None:
+        host: str = None
+        port: int = None
         if 'host' in kwargs:
             host = kwargs['host']
 
@@ -39,48 +40,49 @@ class Console:
         else:
             print(f"Invalid credentials: {host}:{port}")
 
-    def command_status(self, *args, **kwargs):
+    def command_status(self, *args, **kwargs) -> None:
         if self.client_connected():
             self.beans.status()
 
-    def command_tube(self, *args, **kwargs):
+    def command_tube(self, *args, **kwargs) -> None:
         if len(args) < 1:
             raise Exception("Missing argument: tube")
 
-        tube = args[0]
+        tube: str = args[0]
 
         if self.client_connected():
             self.beans.tube(tube)
 
-    def command_drain(self, *args, **kwargs):
+    def command_drain(self, *args, **kwargs) -> None:
         if len(args) < 1:
             raise Exception("Missing argument: tube")
 
-        tube = args[0]
+        tube: str = args[0]
 
         if self.client_connected():
             self.beans.drain(tube)
 
-    def command_put(self, *args, **kwargs):
+    def command_put(self, *args, **kwargs) -> None:
         if len(args) < 2:
             raise Exception("Not enough arguments")
 
-        tube = args[0]
-        body = args[1]
+        tube: str = args[0]
+        body: str = args[1]
 
         if self.client_connected():
             self.beans.put(tube, body)
 
     def client_connected(self) -> bool:
-        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
+        host: str = self.config.get('beanstalkd', 'host')
+        port: int = self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
 
     # noinspection PyShadowingNames
-    def process_input(self, args):
-        command = None
-        options = {}
-        arguments = []
+    def process_input(self, args: list) -> list:
+        command: str = None
+        options: dict = {}
+        arguments: list = []
         if len(args) > 1:
             for i in range(1, len(args)):
                 if args[i][0] == '-':
@@ -88,6 +90,8 @@ class Console:
                         raise InvalidArgumentException(args[i])
 
                     if args[i].count('=') == 1:
+                        option: str
+                        value: str
                         option, value = args[i].split('=')
                         if option[1] == '-':
                             option = option[2:]
@@ -110,22 +114,25 @@ class Console:
                     arguments.append(args[i])
 
             if len(arguments) > 0:
-                command = arguments[0]
+                command: str = arguments[0]
                 arguments.pop(0)
 
         return [command, arguments, options]
 
 
 if __name__ == "__main__":
-    config = configparser.ConfigParser()
+    config: ConfigParser = ConfigParser()
     config.read('config.ini')
 
-    beans = Beans()
-    console = Console(beans, config)
+    beans: Beans = Beans()
+    console: Console = Console(beans, config)
 
+    command: str
+    arguments: list
+    options: dict
     command, arguments, options = console.process_input(sys.argv)
 
-    bindings = {
+    bindings: dict = {
         'help': console.command_help,
         'connect': console.command_connect,
         'status': console.command_status,
