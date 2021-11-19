@@ -1,11 +1,13 @@
 from exception import InvalidArgumentException
 from beans import Beans
 import sys
+import configparser
 
 
 class Console:
-    def __init__(self, beans):
+    def __init__(self, beans, config):
         self.beans = beans
+        self.config: configparser.ConfigParser = config
         pass
 
     def command_help(self, *args, **kwargs):
@@ -26,16 +28,19 @@ class Console:
             port = args[1]
 
         if self.beans.connect(host, port):
-            with open('config', 'w') as f:
-                print(host, port, sep='\n', file=f)
+            if not self.config.has_section('beanstalkd'):
+                self.config.add_section('beanstalkd')
+
+            self.config.set('beanstalkd', 'host', host)
+            self.config.set('beanstalkd', 'port', port)
+            with open('config.ini', 'w') as f:
+                self.config.write(f)
 
         else:
             print(f"Invalid credentials: {host}:{port}")
 
     def command_status(self, *args, **kwargs):
-        f = open('config', 'r')
-        config = f.readlines()
-        host, port = config[0].strip(), config[1].strip()
+        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
         else:
@@ -46,9 +51,8 @@ class Console:
             raise Exception("Missing argument: tube")
 
         tube = args[0]
-        f = open('config', 'r')
-        config = f.readlines()
-        host, port = config[0].strip(), config[1].strip()
+
+        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
         else:
@@ -59,9 +63,8 @@ class Console:
             raise Exception("Missing argument: tube")
 
         tube = args[0]
-        f = open('config', 'r')
-        config = f.readlines()
-        host, port = config[0].strip(), config[1].strip()
+
+        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
         else:
@@ -73,9 +76,8 @@ class Console:
 
         tube = args[0]
         body = args[1]
-        f = open('config', 'r')
-        config = f.readlines()
-        host, port = config[0].strip(), config[1].strip()
+
+        host, port = self.config.get('beanstalkd', 'host'), self.config.getint('beanstalkd', 'port')
         if not self.beans.connect(host, port):
             print(f"Invalid credentials: {host}:{port}")
         else:
@@ -122,8 +124,11 @@ class Console:
 
 
 if __name__ == "__main__":
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
     beans = Beans()
-    console = Console(beans)
+    console = Console(beans, config)
 
     command, arguments, options = console.process_input(sys.argv)
 
