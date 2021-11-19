@@ -1,5 +1,6 @@
 import greenstalk
 import strings
+import tabulate
 
 
 class Beans:
@@ -24,10 +25,13 @@ class Beans:
 
         info = self.client.stats()
         print(strings.status.format(info['version'], info['hostname']))
+        result = []
         tubes = self.client.tubes()
         for tube in tubes:
             stats = self.client.stats_tube(tube)
-            print(f"{tube}: {stats['current-jobs-ready']}")
+            result.append((tube, stats['current-jobs-ready']))
+
+        print(tabulate.tabulate(result, headers=['Tube', 'Jobs ready']))
 
     def tube(self, tube='default'):
         if self.client is None:

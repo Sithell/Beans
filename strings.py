@@ -8,8 +8,7 @@ Visit https://github.com/Sithell/Beans to learn more.
 """
 
 status = """\
-Beanstalkd v{} on {}
-Tube: Jobs ready\
+Beanstalkd v{} on {}\
 """
 
 tube = """\
