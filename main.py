@@ -4,6 +4,7 @@ from exception import InvalidArgumentException
 import strings
 
 
+# noinspection PyShadowingNames
 def process_input(args):
     command = None
     options = {}
